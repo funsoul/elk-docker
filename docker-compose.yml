@@ -1,0 +1,37 @@
+version: '2'
+services:
+  elasticsearch:
+    image: elasticsearch:${ELASTICSEARCH_VERSION}
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - $PWD/elasticsearch/data:/usr/share/elasticsearch/data
+    hostname: elasticsearch
+    restart: always
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+  kibana:
+    image: kibana:${TAG}
+    environment:
+      - ELASTICSEARCH_URL=${ELASTICSEARCH_URL}
+    hostname: kibana
+    depends_on:
+      - elasticsearch
+    restart: always
+    ports:
+      - "5601:5601"
+  logstash:
+    image: logstash:${TAG}
+    command: logstash -f /etc/logstash/conf.d/logstash.conf
+    volumes:
+      - $PWD/logstash/conf.d:/etc/logstash/conf.d
+      - $PWD/logst:/tmp
+    hostname: logstash
+    restart: always
+    depends_on:
+      - elasticsearch
+    ports:
+      - "7001-7005:7001-7005"
+      - "4560:4560"
+      - "9600:9600"
